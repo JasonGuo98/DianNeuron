@@ -39,3 +39,5 @@ class ADD(object):
 		grid_on_inputs = [grid_on_y for i in range(self.n_of_input_layers)]
 		return grid_on_inputs
 
+def get_op(opname):
+    return OP()
