@@ -42,6 +42,7 @@ class Parameter(object):
                 self.reg_loss = self.regularizationRate * np.sum(np.abs(self.value))
                 ones = np.ones_like(self.value)
                 ones[self.value<0] = -1
+                ones[self.value==0] = 0
                 self.reg_gradient=self.regularizationRate * ones
                 pass
             elif self.regularization=="L2":

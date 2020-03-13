@@ -35,24 +35,28 @@ class NN_Model(object):
         else:
             raise ValueError("Wrong optimizer")
 
-        self.all_pamaters = []
-        layer_now = output_layer
+        # 这里需要一个图裁剪算法，自动将输入和输出的子图裁剪出来
+        # 这里需要一个获取有向无环图的出入度的算法，使得build和结构定义可以分开
 
-        # 目前遍历方法只能支持无分支模型
-        while(layer_now!=input_layer):
-            for parameter in layer_now.parameters.values():
-                self.all_pamaters.append(parameter)
-            layer_now = layer_now.last_layer
+        self.all_pamaters = []
+        self.forward_priority,self.forward = get_forward_func(input_layer,output_layer)
+        # 获取前向传播函数
+        self.backward_priority,self.backward = get_backword_func(input_layer,output_layer)
+        # 获取反向传播函数
+
+        for layer in self.forward_priority:
+            if layer.TYPE == 'layer':
+                # 只有layer有参数
+                for parameter in layer.parameters.values():
+                    self.all_pamaters.append(parameter)
+        
 
         # 将所有相关变量放入优化器中
         self.optimizer.add_parameters(self.all_pamaters)
         # 将变量加入loss中，为了计算他们的正则化，这里的正则化已经加入到参数内部了
         self.lossfunction.add_parameters(self.all_pamaters)
         # print("before get forward")
-        self.forward = get_forward_func(input_layer,output_layer)
-        # 获取前向传播函数
-        self.backward = get_backword_func(input_layer,output_layer)
-        # 获取反向传播函数
+        
 
         self.step = 0 # 起始时间步为0
 
@@ -76,73 +80,71 @@ class NN_Model(object):
 def get_forward_func(input_layer,output_layer):
     # 这里的语法有问题
     # print("do get forward")
-    # if type(input_layers) != list:
-    #     input_layers = [input_layers]
-    # if type(output_layers) != list:
-    #     output_layers = output_layers
+    # 目前只能有一个输入，和一个输出
 
-    # def cal_priority(input_layers,output_layers):
-    #     zero_in_degree_nodes = input_layers
-    #     priority = []
-    #     for layer in zero_in_degree_nodes:
-    #         priority.append(layer)
-    #         for next_layer in layer.next_layers:
-    #             next_layer.in_degree-=1
-    #             if next_layers.in_degree == 0:
-    #                 zero_in_degree_nodes.append(next_layer)
-    #     return priority
-    # priority = get_priority(input_layers,output_layers)
-    # def forward_func(x_list):
-    #     # 现在可以处理有向无环图图
-    #     for i in range(len(x_list)):
-    #         priority[i].forward(x[i])
-    #     for layer in priority[len(x_list):]:
-    #         layer.auto_forward()
-    #     y_list = []
-    #     for layer in output_layer:
-    #         y_list.append(layer.info_dic['y'])
-    #     return y_list
+    def get_priority(input_layer,output_layer):
+        zero_in_degree_nodes = [input_layer]
+        priority = []
+        for layer in zero_in_degree_nodes:
+            priority.append(layer)
+            for next_layer in layer.next_layer_list:
+                next_layer.in_degree-=1
+                if next_layer.in_degree == 0 and next_layer not in zero_in_degree_nodes:
+                    zero_in_degree_nodes.append(next_layer)
+        return priority
+    priority = get_priority(input_layer,output_layer)
     def forward_func(x):
-        if input_layer != output_layer:
-            # 递归查找
-            return output_layer.forward(get_forward_func(input_layer,output_layer.last_layer)(x))
-        else:
-            return input_layer.forward(x)
-    return forward_func
+        # 现在可以处理有向无环图图
+        priority[0].forward(x)
+        for layer in priority[1:]:
+            layer.auto_forward()
+        y=output_layer.info_dic['y']
+        return y
+    # def forward_func(x):
+    #     if input_layer != output_layer:
+    #         # 递归查找
+    #         return output_layer.forward(get_forward_func(input_layer,output_layer.last_layer)(x))
+    #     else:
+    #         return input_layer.forward(x)
+    return priority,forward_func
 
 def get_backword_func(input_layer,output_layer):
     # 输出出度不一定为0
     # 这里要求至少有一个为0
-    # def cal_priority(input_layers,output_layers):
-    #     zero_out_degree_nodes = []
-    #     priority = []
-    #     for layer in output_layers:
-    #         if layer.out_degree == 0:
-    #             zero_out_degree_nodes.append(layer)
-    #     for layer in zero_out_degree_nodes:
-    #         priority.append(layer)
-    #         for last_layer in layer.last_layers:
-    #             last_layer.out_degree-=1
-    #             if last_layers.out_degree == 0:
-    #                 zero_out_degree_nodes.append(last_layer)
-    #     return priority
-    # priority = get_priority(input_layers,output_layers)
-    # def backward_func(grid_info_dic_list):
-    #     # 现在可以处理有向无环图图
-    #     for i in range(len(grid_info_dic_list)):
-    #         priority[i].forward(x[i])
-    #     for layer in priority[len(x_list):]:
-    #         layer.auto_forward()
-    #     y_list = []
-    #     for layer in output_layer:
-    #         y_list.append(layer.info_dic['y'])
-    #     return y_list
-
-
+    def get_priority(input_layer,output_layer):
+        zero_out_degree_nodes = [output_layer]
+        priority = []
+        
+        for layer in zero_out_degree_nodes:
+            priority.append(layer)
+            if layer.TYPE == 'op':
+                # op可以有多个入度
+                for last_layer in layer.last_layers_list:
+                    last_layer.out_degree-=1
+                    if last_layer.out_degree == 0 and last_layer not in zero_out_degree_nodes:
+                        zero_out_degree_nodes.append(last_layer)
+            elif layer.TYPE == 'layer':
+                # layer 只有一入出度
+                if layer.last_layer:
+                    # 不为输入
+                    last_layer = layer.last_layer
+                    last_layer.out_degree-=1
+                    if last_layer.out_degree == 0 and last_layer not in zero_out_degree_nodes:
+                        zero_out_degree_nodes.append(last_layer)
+        return priority
+    priority = get_priority(input_layer,output_layer)
     def backward_func(grid_on_y):
-        if input_layer != output_layer:
-            # 递推回溯
-            return get_backword_func(input_layer,output_layer.last_layer)(output_layer.backward(grid_on_y))
-        else:
-            return input_layer.backward(grid_on_y)
-    return backward_func
+        # 现在可以处理有向无环图图
+        priority[0].backward(grid_on_y)
+        for layer in priority[1:]:
+            layer.auto_backward()
+        return input_layer.grid_on_x
+
+
+    # def backward_func(grid_on_y):
+    #     if input_layer != output_layer:
+    #         # 递推回溯
+    #         return get_backword_func(input_layer,output_layer.last_layer)(output_layer.backward(grid_on_y))
+    #     else:
+    #         return input_layer.backward(grid_on_y)
+    return priority,backward_func

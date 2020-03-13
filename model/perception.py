@@ -29,7 +29,6 @@ class Perception(Classifier):
             raise TypeError("input_dim and n_of_classes must be int")
         super().__init__(input_dim,n_of_classes)
         # 初始化后要求执行build函数，来构建模型
-        self.input_dim
         self.model = None
 
 
