@@ -2,7 +2,7 @@ import numpy as np
 from functools import wraps
 import copy
 
-from utils.mini_batch_iter import MINI_BATCH_ITER
+from ..utils.mini_batch_iter import MINI_BATCH_ITER
 from .classifier import Classifier
 from .nn_model import NN_Model
 
