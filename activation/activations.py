@@ -1,4 +1,3 @@
-import numpy as np
 from .activations_class import *
 activations_list = [None,"softmax","relu","sigmoid","tanh"]
 

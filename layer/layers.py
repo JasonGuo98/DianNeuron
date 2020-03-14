@@ -1,5 +1,3 @@
-import numpy as np
-from ..parameter.parameter import Parameter
 from .layers_class import *
 
 

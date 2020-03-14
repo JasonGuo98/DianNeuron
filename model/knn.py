@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import cupy as np
+except:
+    import numpy as np
 from classifier import *
 class KNN(Classifier):
     def __init__(self,input_dim,n_of_classes,K=1,distance_type = "L2",weight = "uniform"):

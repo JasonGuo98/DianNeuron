@@ -1,6 +1,7 @@
-import numpy as np
-from functools import wraps
-import copy
+try:
+    import cupy as np
+except:
+    import numpy as np
 
 from ..utils.mini_batch_iter import MINI_BATCH_ITER
 from .classifier import Classifier
@@ -77,7 +78,7 @@ class Perception(Classifier):
                 loss_on_batch,reg_loss_on_batch = self.train_on_batch(x_batch,y_batch)
                 loss_list.append(loss_on_batch)
                 print("\rloss now:%.4f,reg_loss_on_batch:%.4f,sum loss: %.4f"%(loss_on_batch,reg_loss_on_batch,loss_on_batch+reg_loss_on_batch),end='')
-                
+                del x_batch,y_batch
             train_acc.append(self.test(X_train,y_train,put_out = False))
             if test_set:
                 test_acc.append(self.test(X_test,y_test,put_out = False))

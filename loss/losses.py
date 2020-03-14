@@ -1,5 +1,3 @@
-import numpy as np
-import copy
 from .losses_class import *
 
 losses_list = ["CrossEntropy","HingeLoss"]

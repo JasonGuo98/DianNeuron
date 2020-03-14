@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import cupy as np
+except:
+    import numpy as np
 
 class Optimizer(object):
     """docstring for Loss"""
@@ -47,7 +50,12 @@ class Adam(Optimizer):
 
         self.all_pamaters = all_pamaters
         for pamater in all_pamaters:
+            # print(type(pamater.value))
+            # print(pamater.value.shape)
+            # s = 
+            # 这里用zeroslike会在cupy报错
             self.s[pamater.name] = np.zeros_like(pamater.value) # 一阶矩
+            # r = 
             self.r[pamater.name] = np.zeros_like(pamater.value) # 二阶矩
 
     def optimize(self,t):
@@ -56,9 +64,14 @@ class Adam(Optimizer):
         beta = self.beta
         delta = self.delta
         for pamater in self.all_pamaters:
-            self.s[pamater.name] = alpha*self.s[pamater.name] + (1-alpha)*(pamater.gradient+pamater.reg_gradient)
-            self.r[pamater.name] = beta*self.r[pamater.name] + (1-beta)*((pamater.gradient+pamater.reg_gradient)**2)
+            self.s[pamater.name]*=alpha
+            self.s[pamater.name]+=(1-alpha)*(pamater.gradient+pamater.reg_gradient)
+            #self.s[pamater.name] = alpha*self.s[pamater.name] + (1-alpha)*(pamater.gradient+pamater.reg_gradient)
+            self.r[pamater.name]*=beta
+            self.r[pamater.name]+=(1-beta)*((pamater.gradient+pamater.reg_gradient)**2)
+            #self.r[pamater.name] = beta*self.r[pamater.name] + (1-beta)*((pamater.gradient+pamater.reg_gradient)**2)
             s_ = self.s[pamater.name]/(1-alpha**t)
             r_ = self.r[pamater.name]/(1-beta**t)
             gradient = s_/(np.sqrt(r_)+delta)
             pamater.value-=gradient*learning_rate
+            del gradient,s_,r_

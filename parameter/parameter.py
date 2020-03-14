@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import cupy as np
+except:
+    import numpy as np
 MAX_N = 100
 
 init_list = ["zero","normal","Xavier"]

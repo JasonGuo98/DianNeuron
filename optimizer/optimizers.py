@@ -1,4 +1,3 @@
-import numpy as np
 from .optimizers_class import *
 optimizers_list = ['sgd','adam']
 

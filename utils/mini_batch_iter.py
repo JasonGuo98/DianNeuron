@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import cupy as np
+except:
+    import numpy as np
 import copy
 class MINI_BATCH_ITER(object):
   def __init__(self,X,y,shuffle=True,batch_size = 64):
@@ -27,4 +30,5 @@ class MINI_BATCH_ITER(object):
       self.start_index+=self.batch_size 
       return batch_X,batch_y
     else:
+      del self.X,self.y
       raise StopIteration

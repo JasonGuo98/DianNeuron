@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import cupy as np
+except:
+    import numpy as np
 from ..parameter.parameter import Parameter
 from ..activation.activations import activations_list,get_activation
 
@@ -104,8 +107,20 @@ class Dense(Layer):
         y = self.activation.forward(wxb)
 
         # 保留必要的中间值方便计算梯度
+        try:
+            del self.info_dic['y']
+        except:
+            pass
         self.info_dic['y'] = y
+        try:
+            del self.info_dic['wxb']
+        except:
+            pass
         self.info_dic['wxb'] = wxb
+        try:
+            del self.info_dic['x']
+        except:
+            pass
         self.info_dic['x'] = x
         
         # for parameter in self.parameters.value():
