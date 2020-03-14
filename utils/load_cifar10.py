@@ -33,6 +33,7 @@ def load_CIFAR10(ROOT):
     del X, Y
     Xte, Yte = load_CIFAR_batch(os.path.join(ROOT, 'test_batch'))
     if import_CP:
-        return cp.array(Xtr), cp.array(Ytr), cp.array(Xte), cp.array(Yte)
+        return cp.array(Xtr,dtype = "float32"), cp.array(Ytr),\
+         cp.array(Xte,dtype = "float32"), cp.array(Yte)
     else:
         return Xtr, Ytr, Xte, Yte

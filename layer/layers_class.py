@@ -66,7 +66,7 @@ class Inputs(Layer):
 
 class Dense(Layer):
     count = 0
-    def __init__(self,last_layer,out_dim,activation,W_regularization,W_regularizationRate,W_init,b_init,name):
+    def __init__(self,last_layer,out_dim,activation,W_regularization,W_regularizationRate,W_init,b_init,dtype,name):
         super(Dense, self).__init__()
         last_layer.next_layer_list.append(self)
         last_layer.out_degree+=1
@@ -90,8 +90,8 @@ class Dense(Layer):
         pass
 
         self.W = Parameter((self.in_dim,self.out_dim),name = self.name+":W", \
-            regularization = W_regularization,regularizationRate = W_regularizationRate,init =W_init) 
-        self.b = Parameter((self.out_dim,),name = self.name+"：b",init=b_init)
+            regularization = W_regularization,regularizationRate = W_regularizationRate,init =W_init,dtype = dtype) 
+        self.b = Parameter((self.out_dim,),name = self.name+"：b",init=b_init,dtype = dtype)
         self.parameters = {"W":self.W,'b':self.b}
         
         self.info_dic = {}

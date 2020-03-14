@@ -8,7 +8,7 @@ init_list = ["zero","normal","Xavier"]
 
 class Parameter(object):
     count = 0
-    def __init__(self,shape,name=None,regularization = None,regularizationRate = 0.0,init="zero",*args,**kwds):
+    def __init__(self,shape,name=None,regularization = None,regularizationRate = 0.0,init="zero",dtype = "float32",*args,**kwds):
         # print(shape,name,init)
         if type(shape) is not tuple:
             raise TypeError("shape must be a tuple")
@@ -23,13 +23,13 @@ class Parameter(object):
         self.regularizationRate = regularizationRate
 
         if init == "zero":
-            self.value = np.zeros(shape)
+            self.value = np.zeros(shape,dtype = dtype)
         elif init == "normal":
-            self.value = np.random.standard_normal(shape)
+            self.value = np.random.standard_normal(shape,dtype = dtype)
         elif init == "Xavier":
             """正确性未知"""
             print("!!!Xavier正确性未知!!!")
-            self.value=np.random.standard_normal(shape) * np.sqrt(1 / shape[0])
+            self.value=np.random.standard_normal(shape,dtype = dtype) * np.sqrt(1 / shape[0])
         if name:
             self.name = name+str(shape)+" : %d"%Parameter.count
         else:
