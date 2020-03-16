@@ -1,7 +1,4 @@
-try:
-    import cupy as np
-except:
-    import numpy as np
+from .. import *
 
 from ..utils.mini_batch_iter import MINI_BATCH_ITER
 from .classifier import Classifier

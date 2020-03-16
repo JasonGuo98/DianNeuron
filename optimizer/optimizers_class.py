@@ -1,7 +1,4 @@
-try:
-    import cupy as np
-except:
-    import numpy as np
+from .. import *
 
 class Optimizer(object):
     """docstring for Loss"""

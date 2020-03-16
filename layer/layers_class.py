@@ -1,7 +1,4 @@
-try:
-    import cupy as np
-except:
-    import numpy as np
+from .. import *
 from ..parameter.parameter import Parameter
 from ..activation.activations import activations_list,get_activation
 
