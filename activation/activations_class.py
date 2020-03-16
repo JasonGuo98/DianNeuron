@@ -17,7 +17,7 @@ class Activation(object):
     def backward(self,grid_on_y,info_dic = None):
         return grid_on_y
 
-class Relu(object):
+class Relu(Activation):
     """docstring for Activation"""
     def __init__(self, name='relu'):
         self.name = name
@@ -34,7 +34,7 @@ class Relu(object):
 
         return grid_on_x
 
-class Tanh(object):
+class Tanh(Activation):
     """docstring for Activation"""
     def __init__(self, name='tanh'):
         self.name = name
@@ -48,7 +48,7 @@ class Tanh(object):
 
         return grid_on_y*(1-y**2)
 
-class Softmax(object):
+class Softmax(Activation):
     """docstring for Activation"""
     def __init__(self, name='softmax',delta = 1e-6):
         self.name = name
@@ -71,7 +71,7 @@ class Softmax(object):
         grid_on_x = np.sum(grid_on_y.reshape(-1,1,out_dim)@dy_dx,axis=-2).reshape(-1,out_dim)
         return grid_on_x
 
-class Sigmoid(object):
+class Sigmoid(Activation):
     """docstring for Activation"""
     def __init__(self, name = 'sigmoid'):
         self.name = name
@@ -85,23 +85,4 @@ class Sigmoid(object):
         grid_on_x = grid_on_y*y*(1-y)
         return grid_on_x
 
-
-def get_activation(name,forward=None,backword=None):
-    activations_list = ["softmax","relu","sigmoid","tanh"]
-    if name in activations_list:
-        if name == "softmax":
-            return Softmax()
-        elif name == "relu":
-            return Relu()
-        elif name == "sigmoid":
-            return Sigmoid()
-        elif name == "tanh":
-            return Tanh()
-    elif forward and backword:
-        activation = Activation()
-        activation.forward = forward
-        activation.backword = backword
-        return activation
-    else:
-        raise ValueError("Incorrect activation")
 
