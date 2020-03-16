@@ -134,7 +134,7 @@ class Dense(Layer):
         
     def backward(self,grid_on_y):
         # 只用处理单输出
-        grid_on_xwb = self.activation.backward(grid_on_y,self.info_dic)
+        grid_on_xwb = self.activation.backward(grid_on_y, self.info_dic)
 
         x = self.info_dic['x']
         grid_on_x = grid_on_xwb@self.W.value.T

@@ -128,7 +128,7 @@ def get_backword_func(input_layer,output_layer):
     priority = get_priority(input_layer,output_layer)
     def backward_func(grid_on_y):
         # 现在可以处理有向无环图图
-        priority[0].backward(grid_on_y)
+        priority[0].backward(grid_on_y, )
         for layer in priority[1:]:
             layer.auto_backward()
         return input_layer.grid_on_x
