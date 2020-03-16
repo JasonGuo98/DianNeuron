@@ -1,6 +1,7 @@
 from .layers_class import *
 
 
+
 def dense(out_dim,activation=None,\
     W_regularization="L2",W_regularizationRate=0.01,W_init='normal',b_init='zero',dtype = "float32",name = None):
     def inner_build(last_layer):
@@ -13,4 +14,9 @@ def inputs(in_dim,name = "Inputs"):
     layer = Inputs(in_dim,name)
     return layer
 
+def dropout(keep_prob = 0.5,name = "Dropout"):
+    def inner_build(last_layer):
+        dropout = Dropout(last_layer,keep_prob,name)
+        return dropout
+    return inner_build
 
