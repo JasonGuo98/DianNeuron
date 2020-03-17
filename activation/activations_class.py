@@ -105,7 +105,7 @@ class ELU(Activation):
         return y
 
     def backward(self, grid_on_y, info_dic=None):
-        x = info_dic['x']
+        x = info_dic['wxb']
         return grid_on_y * np.where(x > 0, 1, self.alpha * np.exp(x))
 
 
@@ -120,6 +120,6 @@ class Swish(Activation):
         return y
 
     def backward(self, grid_on_y, info_dic=None):
-        x = info_dic['x']
+        x = info_dic['wxb']
         return np.exp(self.beta * x) / (1 + np.exp(self.beta * x)) + x * (
                 self.beta * np.exp(self.beta * x) / ((1 + np.exp(self.beta * x)) * (1 + np.exp(self.beta * x))))
