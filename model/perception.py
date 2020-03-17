@@ -74,7 +74,7 @@ class Perception(Classifier):
             for x_batch,y_batch in batch_iter:
                 loss_on_batch,reg_loss_on_batch = self.train_on_batch(x_batch,y_batch)
                 loss_list.append(loss_on_batch)
-                print("\rloss now:%.4f,reg_loss_on_batch:%.4f,sum loss: %.4f"%(loss_on_batch,reg_loss_on_batch,loss_on_batch+reg_loss_on_batch),end='')
+                print("\rloss now:%.4f,reg_loss_on_batch:%.4f,sum loss: %.4f"%(loss_on_batch,reg_loss_on_batch,loss_on_batch+reg_loss_on_batch/batch_size),end='')
                 del x_batch,y_batch
             train_acc.append(self.test(X_train,y_train,put_out = False))
             if test_set:
@@ -91,7 +91,7 @@ class Perception(Classifier):
     def test(self,X_test,y_test,put_out = True):
         """直接调用predict进行测试"""
         n_of_test = X_test.shape[0]
-        y_pred = np.argmax(self.model.forward(X_test),axis=1)
+        y_pred = np.argmax(self.model.forward(X_test,is_train = False),axis=1)
         acc = sum((y_pred)==np.argmax(y_test,axis=1))/n_of_test
         if put_out:
             print("\n==> ACC = %.2f %%"%(100*acc))
