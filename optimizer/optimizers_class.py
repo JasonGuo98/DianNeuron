@@ -79,7 +79,7 @@ class Momentum(Optimizer):
         self.name = name
         self.learning_rate = learning_rate
         self.momentum = momentum
-        self.v = 0
+        self.v = {}
 
     def optimize(self, t):
         # v = - dx * lr + v * momentum,先更新v再梯度变化
