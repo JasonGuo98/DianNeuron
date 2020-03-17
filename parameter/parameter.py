@@ -1,7 +1,7 @@
 from .. import *
 MAX_N = 100
 
-init_list = ["zero","normal","Xavier"]
+init_list = ["zero","normal","Xavier","kaiming_normal"]
 
 class Parameter(object):
     count = 0
@@ -34,13 +34,20 @@ class Parameter(object):
                 self.value = value.astype(dtype)
         elif init == "Xavier":
             """正确性未知"""
-            print("!!!Xavier正确性未知!!!")
             if USING_CUPY:
                 self.value = np.random.standard_normal(shape,dtype = dtype) \
-                            * np.sqrt(1 / shape[0])
+                            / np.sqrt(shape[0])
             elif USING_NUMPY:
                 value = np.random.standard_normal(shape) \
-                            * np.sqrt(1 / shape[0])
+                            /np.sqrt(shape[0])
+                self.value = value.astype(dtype)
+        elif init == "kaiming_normal":
+            if USING_CUPY:
+                self.value = np.random.standard_normal(shape,dtype = dtype) \
+                            / np.sqrt(shape[0]//2)
+            elif USING_NUMPY:
+                value = np.random.standard_normal(shape) \
+                            /np.sqrt(shape[0]//2)
                 self.value = value.astype(dtype)
         if name:
             self.name = name+str(shape)+" : %d"%Parameter.count
@@ -51,7 +58,7 @@ class Parameter(object):
         Parameter.count+=1
 
     def cal_regularization(self,):
-        self.gradient = 0 # 梯度清零
+        self.gradient[:] = 0 # 梯度清零
         if self.regularization:
             if self.regularization=="L1":
                 self.reg_loss = self.regularizationRate * np.sum(np.abs(self.value))
