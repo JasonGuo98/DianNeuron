@@ -86,11 +86,11 @@ def get_forward_func(input_layer,output_layer):
                     zero_in_degree_nodes.append(next_layer)
         return priority
     priority = get_priority(input_layer,output_layer)
-    def forward_func(x):
+    def forward_func(x,is_train = True):
         # 现在可以处理有向无环图图
-        priority[0].forward(x)
+        priority[0].forward(x,is_train)
         for layer in priority[1:]:
-            layer.auto_forward()
+            layer.auto_forward(is_train)
         y=output_layer.info_dic['y']
         return y
     # def forward_func(x):

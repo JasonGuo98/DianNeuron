@@ -1,15 +1,13 @@
-import numpy as np
 
+from .. import *
 MAX_N = 100
 
-init_list = ["zero", "normal", "Xavier"]
-
+init_list = ["zero","normal","Xavier","kaiming_normal"]
 
 class Parameter(object):
     count = 0
-
-    def __init__(self, shape, name=None, regularization=None, regularizationRate=0.0, init="zero", dtype="float32",
-                 *args, **kwds):
+    def __init__(self,shape,name=None,regularization = None,regularizationRate = 0.0,\
+           init="zero",dtype = "float32",*args,**kwds):
         # print(shape,name,init)
         if type(shape) is not tuple:
             raise TypeError("shape must be a tuple")
@@ -24,13 +22,35 @@ class Parameter(object):
         self.regularizationRate = regularizationRate
 
         if init == "zero":
-            self.value = np.zeros(shape)
+            if USING_CUPY:
+                self.value = np.zeros(shape,dtype = dtype)
+            elif USING_NUMPY:
+                value = np.zeros(shape)
+                self.value = value.astype(dtype)
         elif init == "normal":
-            self.value = np.random.standard_normal(shape)
+            if USING_CUPY:
+                self.value = np.random.standard_normal(shape,dtype = dtype)
+            elif USING_NUMPY:
+                value = np.random.standard_normal(shape)
+                self.value = value.astype(dtype)
         elif init == "Xavier":
             """正确性未知"""
-            print("!!!Xavier正确性未知!!!")
-            self.value = np.random.standard_normal(shape) * np.sqrt(1 / shape[0])
+            if USING_CUPY:
+                self.value = np.random.standard_normal(shape,dtype = dtype) \
+                            / np.sqrt(shape[0])
+            elif USING_NUMPY:
+                value = np.random.standard_normal(shape) \
+                            /np.sqrt(shape[0])
+                self.value = value.astype(dtype)
+        elif init == "kaiming_normal":
+            if USING_CUPY:
+                self.value = np.random.standard_normal(shape,dtype = dtype) \
+                            / np.sqrt(shape[0]//2)
+            elif USING_NUMPY:
+                value = np.random.standard_normal(shape) \
+                            /np.sqrt(shape[0]//2)
+                self.value = value.astype(dtype)
+        
         if name:
             self.name = name + str(shape) + " : %d" % Parameter.count
         else:
@@ -39,8 +59,9 @@ class Parameter(object):
         self.reg_gradient = np.zeros_like(self.value)
         Parameter.count += 1
 
-    def cal_regularization(self, ):
-        self.gradient = 0  # 梯度清零
+
+    def cal_regularization(self,):
+        self.gradient[:] = 0 # 梯度清零
         if self.regularization:
             if self.regularization == "L1":
                 self.reg_loss = self.regularizationRate * np.sum(np.abs(self.value))

@@ -1,7 +1,4 @@
-try:
-    import cupy as np
-except:
-    import numpy as np
+from .. import *
 import copy
 class MINI_BATCH_ITER(object):
   def __init__(self,X,y,shuffle=True,batch_size = 64):
@@ -9,8 +6,8 @@ class MINI_BATCH_ITER(object):
       raise ValueError("X size is %d y size is %d"%(len(X),len(y)))
     if shuffle:
       permutation = np.random.permutation(len(X))
-      self.X = copy.deepcopy(X[permutation])
-      self.y = copy.deepcopy(y[permutation])
+      self.X = X[permutation]
+      self.y = y[permutation]
     else:
       self.X = copy.deepcopy(X)
       self.y = copy.deepcopy(y)

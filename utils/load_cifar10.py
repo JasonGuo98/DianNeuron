@@ -1,12 +1,7 @@
 import pickle
 import os
-try:
-    import cupy as cp
-    import_CP = True
-except:
-    print("cann't use cupy")
-import numpy as np
-
+from .. import *
+import numpy
 
 def load_CIFAR_batch(filename):
     """ load single batch of cifar """
@@ -21,19 +16,20 @@ def load_CIFAR_batch(filename):
 
 def load_CIFAR10(ROOT):
     """load all cifar data"""
-    xs = [] 
+    xs = []
     ys = []
     for b in range(1,6):
         f = os.path.join(ROOT, 'data_batch_%d' % (b, ))
         X, Y = load_CIFAR_batch(f)
         xs.append(X)
         ys.append(Y)
-    Xtr = np.concatenate(xs)#使变成行向量
-    Ytr = np.concatenate(ys)
-    del X, Y
+    Xtr = np.concatenate(np.array(xs))#使变成行向量
+    Ytr = np.concatenate(np.array(ys))
+    for v in xs:
+        del v
+    for v in ys:
+        del v
     Xte, Yte = load_CIFAR_batch(os.path.join(ROOT, 'test_batch'))
-    if import_CP:
-        return cp.array(Xtr,dtype = "float32"), cp.array(Ytr),\
-         cp.array(Xte,dtype = "float32"), cp.array(Yte)
-    else:
-        return Xtr, Ytr, Xte, Yte
+    if USING_CUPY:
+        np.array(Xtr), np.array(Ytr), np.array(Xte), np.array(Yte)
+    return Xtr, Ytr, Xte, Yte
