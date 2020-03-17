@@ -14,6 +14,8 @@
 * softmax
 * tanh
 * sigmoid
+* smash
+* ELU
 
 ## 支持的损失函数
 * CrossEntropy
