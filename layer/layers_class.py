@@ -7,11 +7,11 @@ class Layer(object):
     name = "layer"
     def __init__(self,):
         pass
-    def forward(self,x):
+    def forward(self,x,is_train = True):
         pass
     def backward(self,grid_on_y):
         pass
-    def auto_forward(self,):
+    def auto_forward(self,is_train = True):
         pass
     def auto_backward(self,):
         pass
@@ -39,13 +39,13 @@ class Inputs(Layer):
         Inputs.count+=1
 
 
-    def forward(self,x):
+    def forward(self,x,is_train = True):
         if x.shape[1:] != (self.in_dim,):
             raise ValueError("inputs dim: ",x.shape[1:]," and the build in_dim: ",self.out_dim,"does not match!")
         self.info_dic['y'] = x
 
         return x
-    def auto_forward(self,):
+    def auto_forward(self,is_train = True):
         # 臣妾做不到
         return 
         
@@ -99,7 +99,7 @@ class Dense(Layer):
 
         
 
-    def forward(self,x):
+    def forward(self,x,is_train = True):
         if x.shape[1:] != (self.in_dim,):
             raise ValueError("inputs dim: ",x.shape[1:]," and the build in_dim: ",self.in_dim,"does not match!")
         wxb = x @ self.W.value+self.b.value
@@ -128,7 +128,7 @@ class Dense(Layer):
         self.W.cal_regularization()
         self.b.cal_regularization()
         return y
-    def auto_forward(self,):
+    def auto_forward(self,is_train = True):
         self.forward(self.last_layer.info_dic['y'])
 
         
@@ -156,7 +156,7 @@ class Dense(Layer):
 class Dropout(Layer):
     count = 0
     name = "Dropout"
-    def __init__(self,last_layer,keep_prob,name):
+    def __init__(self,last_layer,keep_prob,scale_train,name):
         super(Dropout, self).__init__()
         last_layer.next_layer_list.append(self)
         last_layer.out_degree+=1
@@ -169,6 +169,7 @@ class Dropout(Layer):
         self.in_dim = last_layer.out_dim
         self.out_dim = self.in_dim
         self.keep_prob = keep_prob
+        self.scale_train = scale_train
 
         if name:
             self.name = name+str(self.out_dim)+" : %d"%Dropout.count
@@ -178,19 +179,25 @@ class Dropout(Layer):
         self.info_dic = {}
         Dropout.count+=1
 
-    def forward(self,x):
+    def forward(self,x,is_train = True):
         if x.shape[1:] != (self.in_dim,):
             raise ValueError("inputs dim: ",x.shape[1:]," and the build in_dim: ",self.in_dim,"does not match!")
-        drops = np.random.random(x.shape)
-        drops[drops<(1-self.keep_prob)] = 0
-        drops[drops>=(1-self.keep_prob)] = 1
-        y = x*drops
-        self.info_dic['drops'] = drops
+        if not is_train:
+            if self.scale_train:
+                y = x*self.keep_prob
+            else:
+                y = x
+        else:
+            drops = np.random.random(x.shape)
+            drops[drops<(1-self.keep_prob)] = 0
+            drops[drops>=(1-self.keep_prob)] = 1
+            y = x*drops
+            self.info_dic['drops'] = drops
         self.info_dic['y'] = y
         return y
 
-    def auto_forward(self,):
-        self.forward(self.last_layer.info_dic['y'])
+    def auto_forward(self,is_train = True):
+        self.forward(self.last_layer.info_dic['y'],is_train)
 
         
     def backward(self,grid_on_y):

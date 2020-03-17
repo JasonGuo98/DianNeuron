@@ -14,9 +14,9 @@ def inputs(in_dim,name = "Inputs"):
     layer = Inputs(in_dim,name)
     return layer
 
-def dropout(keep_prob = 0.5,name = "Dropout"):
+def dropout(keep_prob = 0.5,scale_train = True,name = "Dropout"):
     def inner_build(last_layer):
-        dropout = Dropout(last_layer,keep_prob,name)
+        dropout = Dropout(last_layer,keep_prob,scale_train,name)
         return dropout
     return inner_build
 
