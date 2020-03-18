@@ -86,3 +86,23 @@ class Momentum(Optimizer):
         for parameter in self.all_parameters:
             self.v = -(parameter.gradient + parameter.reg_gradient) * self.learning_rate + self.v * self.momentum
             parameter.value += self.v
+
+# class Adam(Optimizer):
+#     def __init__(self, name='Adam', learning_rate=1e-3, beta1=1e-8, beta2=0.999, esp=1e-8):
+#         self.name = name
+#         self.learning_rate = learning_rate
+#         self.esp = esp
+#         self.beta1 = beta1
+#         self.beta2 = beta2
+#         self.m = {}
+#         self.v = {}
+#
+#     def optimize(self, t):
+#         # m = beta1*m + (1-beta1)*dx
+#         # v = beta2*v + (1-beta2)*(dx**2)
+#         # x += - learning_rate * m / (np.sqrt(v) + eps)
+#         for parameter in self.all_parameters:
+#             dx = parameter.gradient + parameter.reg_gradient
+#             self.m = self.beta1 * self.m + (1-self.beta1) * dx
+#             self.v = self.beta2 * self.v + (1-self.beta2) * (dx**2)
+#             parameter.value += -self.learning_rate * self.m / (np.sqrt(self.v) + self.esp)

@@ -24,6 +24,8 @@
 ## 支持的优化器
 * sgd
 * adam
+* momentum
+* AdaGram
 
 ## 支持的初始化方法
 * normal
