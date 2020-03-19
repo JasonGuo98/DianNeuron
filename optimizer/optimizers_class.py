@@ -81,11 +81,17 @@ class Momentum(Optimizer):
         self.momentum = momentum
         self.v = {}
 
+    def add_parameters(self, all_parameters):
+        self.all_parameters = all_parameters
+        for parameter in all_parameters:
+            self.v[parameter.name] = np.zeros_like(parameter.value)
+
     def optimize(self, t):
         # v = - dx * lr + v * momentum,先更新v再梯度变化
         for parameter in self.all_parameters:
-            self.v = -(parameter.gradient + parameter.reg_gradient) * self.learning_rate + self.v * self.momentum
-            parameter.value += self.v
+            self.v[parameter.name] = -(parameter.gradient + parameter.reg_gradient) * self.learning_rate + self.v[
+                parameter.name] * self.momentum
+            parameter.value += self.v[parameter.name]
 
 # class Adam(Optimizer):
 #     def __init__(self, name='Adam', learning_rate=1e-3, beta1=1e-8, beta2=0.999, esp=1e-8):
