@@ -55,16 +55,19 @@ class Tanh(Activation):
 class Softmax(Activation):
     """docstring for Activation"""
 
-    def __init__(self, name='softmax', delta=1e-6):
+    def __init__(self, name='softmax', delta=1e-7):
         self.name = name
         self.delta = delta
 
     def forward(self, x):
-        x -= np.max(x, axis=1, keepdims=True)
+        batch_max = np.max(x, axis=1, keepdims=True)
+        x -= batch_max
         exp = np.exp(x) + self.delta
-        exp_sum = np.sum(exp, axis=1, keepdims=True) + self.delta * x.shape[-1]
+        exp_sum = np.sum(exp, axis=1, keepdims=True)
+        # exp_sum = np.sum(exp, axis=1, keepdims=True) + self.delta * x.shape[-1]
         # 这样使得最小值不会小于delta，最大值不会大于1-delta*(self.out_dim-1)
         # 当输出维度为1的时候，输出1，不允许这样做
+        x += batch_max
         y = exp / exp_sum
         return y
 
