@@ -158,6 +158,7 @@ class Dense(Layer):
             grid_on_y += layer.info_dic['grid_on_%s' % self.name]
         grid_on_x = self.backward(grid_on_y)
 
+        
 
 class Dropout(Layer):
     count = 0

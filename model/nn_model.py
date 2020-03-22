@@ -91,6 +91,7 @@ def get_forward_func(input_layer, output_layer):
         priority[0].forward(x, is_train)
         for layer in priority[1:]:
             layer.auto_forward(is_train)
+            # print(layer.name)
         y = output_layer.info_dic['y']
         return y
 
