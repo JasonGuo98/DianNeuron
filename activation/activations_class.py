@@ -122,6 +122,6 @@ class Swish(Activation):
         return y
 
     def backward(self, grid_on_y, info_dic=None):
-        y = info_dic['y']
-        return np.exp(self.beta * x) / (1 + np.exp(self.beta * x)) + x * (
-                self.beta * np.exp(self.beta * x) / ((1 + np.exp(self.beta * x)) * (1 + np.exp(self.beta * x))))
+        x = info_dic['wxb']
+        return grid_on_y*(np.exp(self.beta * x) / (1 + np.exp(self.beta * x)) + x * (
+                self.beta * np.exp(self.beta * x) / ((1 + np.exp(self.beta * x)) * (1 + np.exp(self.beta * x)))))
