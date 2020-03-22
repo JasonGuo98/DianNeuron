@@ -10,10 +10,10 @@ class OP(object):
     def backward(self,):
         pass
 
-    def auto_forward(self,):
+    def auto_forward(self,is_train):
         pass
 
-    def auto_backward(self,):
+    def auto_backward(self,is_train):
         pass
         
 
@@ -55,7 +55,7 @@ class ADD(OP):
             y+=results
         return y
 
-    def auto_forward(self,):
+    def auto_forward(self,is_train):
         layer_results = [layer.info_dic['y'] for layer in self.last_layer_list ]
         self.info_dic['y'] = self.forward(layer_results)
 
@@ -65,7 +65,7 @@ class ADD(OP):
             self.info_dic['grid_on_%s'%layer.name] = grid_on_y
         # return grid_on_y
 
-    def auto_backward(self,):
+    def auto_backward(self,is_train):
         grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s'%self.name]
         for layer in self.next_layer_list[1:]:
             grid_on_y+=layer.info_dic['grid_on_%s'%self.name]
