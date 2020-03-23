@@ -65,13 +65,13 @@ class Perception(Classifier):
             X_test = test_set[0]
             y_test = test_set[1]
         epoch_count = 0
+        running_loss_on_batch = running_reg_loss_on_batch = 0
         for ep in range(epoch):
             print("train on epoch %d:"%epoch_count)
             epoch_count +=1
             batch_iter = iter(MINI_BATCH_ITER(X_train,y_train,\
                     shuffle = epoch_shuffle,batch_size=batch_size))
             # build mini-batch iter
-            running_loss_on_batch = running_reg_loss_on_batch = 0
             for x_batch,y_batch in batch_iter:
                 loss_on_batch,reg_loss_on_batch = self.train_on_batch(x_batch,y_batch)
                 running_loss_on_batch = running_loss_on_batch*0.9+loss_on_batch*0.1
