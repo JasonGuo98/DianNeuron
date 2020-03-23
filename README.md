@@ -8,6 +8,7 @@
 * Input
 * Dense
 * ADD
+* Dropout
 
 ## 支持的激活函数
 * relu
@@ -31,6 +32,7 @@
 * normal
 * zero
 * Xavier
+* Kaiming_normal
 
 ## 其他支持
 * 目前只能使用单输入，单输出的无向图网络

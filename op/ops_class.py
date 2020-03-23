@@ -4,16 +4,16 @@ class OP(object):
     TYPE = "op"
     def __init__(self, arg):
         super(OP, self).__init__()
-    def forward(self,):
+    def forward(self,is_train = True):
         pass
 
-    def backward(self,):
+    def backward(self,is_train = True):
         pass
 
-    def auto_forward(self,):
+    def auto_forward(self,is_train = True):
         pass
 
-    def auto_backward(self,):
+    def auto_backward(self,is_train = True):
         pass
         
 
@@ -49,23 +49,23 @@ class ADD(OP):
         ADD.count+=1
 
 
-    def forward(self,layer_results):
+    def forward(self,layer_results,is_train = True):
         y = layer_results[0]
         for results in layer_results[1:]:
             y+=results
         return y
 
-    def auto_forward(self, is_train = True):
+    def auto_forward(self,is_train = True):
         layer_results = [layer.info_dic['y'] for layer in self.last_layer_list ]
         self.info_dic['y'] = self.forward(layer_results)
 
-    def backward(self,grid_on_y):
+    def backward(self,grid_on_y,is_train = True):
         # 只用处理单输出
         for layer in self.last_layers_list:
             self.info_dic['grid_on_%s'%layer.name] = grid_on_y
         # return grid_on_y
 
-    def auto_backward(self, is_train = True):
+    def auto_backward(self,is_train = True):
         grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s'%self.name]
         for layer in self.next_layer_list[1:]:
             grid_on_y+=layer.info_dic['grid_on_%s'%self.name]
