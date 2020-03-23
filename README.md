@@ -9,6 +9,7 @@
 * Dense
 * ADD
 * Dropout
+* BatchNorm1d
 
 ## 支持的激活函数
 * relu
@@ -25,6 +26,8 @@
 ## 支持的优化器
 * sgd
 * adam
+* momentum
+* AdaGram
 
 ## 支持的初始化方法
 * normal
@@ -35,3 +38,4 @@
 ## 其他支持
 * 目前只能使用单输入，单输出的无向图网络
 * L1，L2 对W的正则
+* 使用可视化工具来打印出网络结构
