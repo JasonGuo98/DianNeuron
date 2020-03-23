@@ -32,7 +32,7 @@ class ADD(OP):
         self.out_degree = 0
 
 
-        self.out_dim = layers_list[0].out_dim
+        self.in_dim =  self.out_dim = layers_list[0].out_dim
         self.n_of_input_layers = len(layers_list)
 
         self.last_layers_list = layers_list
