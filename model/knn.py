@@ -1,5 +1,5 @@
 from .. import *
-from classifier import *
+from .classifier import *
 class KNN(Classifier):
     def __init__(self,input_dim,n_of_classes,K=1,distance_type = "L2",weight = "uniform"):
         super().__init__(input_dim,n_of_classes)
