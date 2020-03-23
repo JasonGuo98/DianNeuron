@@ -222,18 +222,22 @@ class Dropout(Layer):
 class BatchNorm1d(Layer):
     count = 0
     name = "BatchNorm1d"
-    def __init__(self, last_layer, init='Xavier', momentum=0.9, eps=1e-5):
-        super(self,BatchNorm1d).__init__()
+    def __init__(self, last_layer,name = None, init='Xavier', momentum=0.9, eps=1e-5):
+        super(BatchNorm1d,self).__init__()
         last_layer.next_layer_list.append(self)
         last_layer.out_degree+=1
+        self.last_layer = last_layer
         self.next_layer_list = []
         self.num_features = last_layer.out_dim
-        self.out_dim = self.in_dim
+        self.out_dim = self.in_dim = last_layer.out_dim
+        self.in_degree = 1
+        self.out_degree = 0
 
         self.gamma = None
         self.beta = None
         self._cache = None
-        self.params = dict()
+        self.parameters = dict()
+        self.info_dic = {}
         self.running_mean = None
         self.running_var = None
         self.momentum = momentum
@@ -246,12 +250,12 @@ class BatchNorm1d(Layer):
         self._initialize()
 
     def _initialize(self):
-        self.gamma = Parameter(shape=[self.num_features], name=self.name+":gamma" , init=self.init_mode)
-        self.beta = Parameter(shape=[self.num_features], name=self.name+":beta", init=self.init_mode)
-        self.running_mean = np.zeros([self.num_features],dtype='float32')
-        self.running_var = np.zeros([self.num_features], dtype='float32')
-        self.params['gamma'] = self.gamma
-        self.params['beta'] = self.beta
+        self.gamma = Parameter(shape=(self.num_features,), name=self.name+":gamma" , init=self.init_mode)
+        self.beta = Parameter(shape=(self.num_features,), name=self.name+":beta", init=self.init_mode)
+        self.running_mean = np.zeros((self.num_features,),dtype='float32')
+        self.running_var = np.zeros((self.num_features,), dtype='float32')
+        self.parameters['gamma'] = self.gamma
+        self.parameters['beta'] = self.beta
 
     def forward(self, x, is_train = True):
         # x.shape: [N, D]
@@ -267,6 +271,7 @@ class BatchNorm1d(Layer):
         else:
             x_ = (x - self.running_mean) / (np.sqrt(self.running_var + self.eps))
             out = self.gamma.value * x_ + self.beta.value
+        self.info_dic["y"] = out
         return out
 
     def backward(self, grad_in):
@@ -282,11 +287,14 @@ class BatchNorm1d(Layer):
 
         self.gamma.gradient = dgamma
         self.beta.gradient = dbeta
-
+        self.info_dic['grid_on_%s'%self.last_layer.name] = dx
         return dx
 
     def auto_forward(self,is_train = True):
         self.forward(self.last_layer.info_dic['y'],is_train)
 
     def auto_backward(self, ):
-        pass
+        grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s'%self.name]
+        for layer in self.next_layer_list[1:]:
+            grid_on_y+=layer.info_dic['grid_on_%s'%self.name]
+        grid_on_x = self.backward(grid_on_y)
