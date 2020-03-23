@@ -32,7 +32,7 @@ def plot_network(input_layer,output_layer):
     
     node_color = []
     for node in G.nodes:
-        print(node)
+        # print(node)
         got_color = False
         for k,v in color_dic.items():
             if node.startswith(k):
