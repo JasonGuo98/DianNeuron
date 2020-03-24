@@ -22,3 +22,10 @@ def dropout(keep_prob = 0.5,scale_train = True,name = "Dropout"):
         return dropout
     return inner_build
 
+def batchNorm1d(init='Xavier', momentum=0.9, eps=1e-5):
+    def inner_build(last_layer):
+        bn_layer = BatchNorm1d(last_layer,init='Xavier', momentum=0.9, eps=1e-5)
+        return bn_layer
+    return inner_build
+
+__all__ = ["dropout","dense","inputs","batchNorm1d"]

@@ -59,6 +59,7 @@ class Parameter(object):
             self.name = "Parameter" + str(shape) + " : %d" % Parameter.count
         self.gradient = np.zeros_like(self.value)
         self.reg_gradient = np.zeros_like(self.value)
+        self.reg_loss = 0
         Parameter.count += 1
 
     def cal_regularization(self, ):

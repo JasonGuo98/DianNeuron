@@ -224,3 +224,83 @@ class Dropout(Layer):
         for layer in self.next_layer_list[1:]:
             grid_on_y += layer.info_dic['grid_on_%s' % self.name]
         grid_on_x = self.backward(grid_on_y)
+
+class BatchNorm1d(Layer):
+    count = 0
+    name = "BatchNorm1d"
+    def __init__(self, last_layer,name = None, init='Xavier', momentum=0.9, eps=1e-5):
+        super(BatchNorm1d,self).__init__()
+        last_layer.next_layer_list.append(self)
+        last_layer.out_degree+=1
+        self.last_layer = last_layer
+        self.next_layer_list = []
+        self.num_features = last_layer.out_dim
+        self.out_dim = self.in_dim = last_layer.out_dim
+        self.in_degree = 1
+        self.out_degree = 0
+
+        self.gamma = None
+        self.beta = None
+        self._cache = None
+        self.parameters = dict()
+        self.info_dic = {}
+        self.running_mean = None
+        self.running_var = None
+        self.momentum = momentum
+        self.eps = eps
+        self.init_mode = init
+        if name:
+            self.name = name+str(self.num_features)+" : %d"%BatchNorm1d.count
+        else:
+            self.name = self.name+str(self.num_features)+" : %d"%BatchNorm1d.count
+        self._initialize()
+
+    def _initialize(self):
+        self.gamma = Parameter(shape=(self.num_features,), name=self.name+":gamma" , init=self.init_mode)
+        self.beta = Parameter(shape=(self.num_features,), name=self.name+":beta", init=self.init_mode)
+        self.running_mean = np.zeros((self.num_features,),dtype='float32')
+        self.running_var = np.zeros((self.num_features,), dtype='float32')
+        self.parameters['gamma'] = self.gamma
+        self.parameters['beta'] = self.beta
+
+    def forward(self, x, is_train = True):
+        # x.shape: [N, D]
+        if is_train:
+            sample_mean = np.mean(x, axis=0)
+            sample_var = np.sum(np.square((x - sample_mean)), axis=0) / x.shape[0]
+            self.running_mean = sample_mean * (1 - self.momentum) + self.running_mean * self.momentum
+            self.running_var = sample_var * (1 - self.momentum) + self.running_var * self.momentum
+            std_var = (np.sqrt(sample_var + self.eps))
+            x_ = (x - sample_mean) / std_var
+            out = self.gamma.value * x_ + self.beta.value
+            self._cache = x, x_, sample_mean, std_var, sample_var
+        else:
+            x_ = (x - self.running_mean) / (np.sqrt(self.running_var + self.eps))
+            out = self.gamma.value * x_ + self.beta.value
+        self.info_dic["y"] = out
+        return out
+
+    def backward(self, grad_in):
+        x, x_, sample_mean, sqrt_var, var = self._cache
+        N, D = grad_in.shape
+        dx = grad_in * self.gamma.value
+
+        dbeta = np.sum(grad_in, axis=0)
+        dgamma = x_ * grad_in
+        dgamma = np.sum(dgamma, 0)
+
+        dx = (1. / N) * 1 / sqrt_var * (N * dx - np.sum(dx, axis=0) - x_ * np.sum(dx * x_, axis=0))
+
+        self.gamma.gradient = dgamma
+        self.beta.gradient = dbeta
+        self.info_dic['grid_on_%s'%self.last_layer.name] = dx
+        return dx
+
+    def auto_forward(self,is_train = True):
+        self.forward(self.last_layer.info_dic['y'],is_train)
+
+    def auto_backward(self, ):
+        grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s'%self.name]
+        for layer in self.next_layer_list[1:]:
+            grid_on_y+=layer.info_dic['grid_on_%s'%self.name]
+        grid_on_x = self.backward(grid_on_y)

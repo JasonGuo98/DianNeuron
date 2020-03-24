@@ -65,6 +65,7 @@ class Perception(Classifier):
             X_test = test_set[0]
             y_test = test_set[1]
         epoch_count = 0
+        running_loss_on_batch = running_reg_loss_on_batch = 0
         for ep in range(epoch):
             print("train on epoch %d:"%epoch_count)
             epoch_count +=1
@@ -73,8 +74,11 @@ class Perception(Classifier):
             # build mini-batch iter
             for x_batch,y_batch in batch_iter:
                 loss_on_batch,reg_loss_on_batch = self.train_on_batch(x_batch,y_batch)
-                loss_list.append(loss_on_batch)
-                print("\rloss now:%.4f,reg_loss_on_batch:%.4f,sum loss: %.4f"%(loss_on_batch,reg_loss_on_batch,loss_on_batch+reg_loss_on_batch/batch_size),end='')
+                running_loss_on_batch = running_loss_on_batch*0.9+loss_on_batch*0.1
+                running_reg_loss_on_batch = running_reg_loss_on_batch*0.9 + reg_loss_on_batch*0.1
+                loss_list.append(running_loss_on_batch)
+                print("\rloss now:%.4f,reg_loss_on_batch:%.4f,sum loss: %.4f"%(running_loss_on_batch,running_reg_loss_on_batch,\
+                                                                    running_loss_on_batch+running_reg_loss_on_batch/batch_size),end='')
                 del x_batch,y_batch
             train_acc.append(self.test(X_train,y_train,put_out = False))
             if test_set:
