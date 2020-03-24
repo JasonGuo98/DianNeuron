@@ -10,10 +10,12 @@ def dense(out_dim,activation=None,\
             W_regularizationRate,W_init,b_init,dtype,name,use_bn,\
             bn_init, bn_momentum, bn_eps)
         return dense_layer
+
     return inner_build
 
-def inputs(in_dim,name = "Inputs"):
-    layer = Inputs(in_dim,name)
+
+def inputs(in_dim, name="Inputs"):
+    layer = Inputs(in_dim, name)
     return layer
 
 def dropout(keep_prob = 0.5,scale_train = True,name = "Dropout"):
