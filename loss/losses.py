@@ -1,6 +1,6 @@
 from .losses_class import *
 
-losses_list = ["CrossEntropy","HingeLoss"]
+losses_list = ["CrossEntropy","HingeLoss","FocalLoss"]
 
 
 def get_lossfunction(lossfunction_name,cal_loss_and_grid = None):
@@ -9,6 +9,8 @@ def get_lossfunction(lossfunction_name,cal_loss_and_grid = None):
             return CrossEntropy()
         elif lossfunction_name == "HingeLoss":
             return HingeLoss()
+        elif lossfunction_name == "FocalLoss":
+            return FocalLoss()
     elif cal_loss_and_grid:
         # 加入可以拓展的lossfunction接口
         lossfunction = Loss(name)
