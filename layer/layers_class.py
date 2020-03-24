@@ -274,6 +274,7 @@ class BatchNorm1d(Layer):
         else:
             self.name = self.name+str(self.num_features)+" : %d"%BatchNorm1d.count
         self._initialize()
+        BatchNorm1d.count+=1
 
     def _initialize(self):
         # print(self.init_mode)
