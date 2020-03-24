@@ -63,4 +63,27 @@ class HingeLoss(Loss):
 
 
         return loss_on_batch,reg_loss,grid_on_y_pred
-    
+
+class FocalLoss(Loss):
+    def __init__(self,name='FocalLoss', alpha=0.25, gamma=2):
+        self.name = name
+        self.alpha = alpha
+        self.gamma = gamma
+        assert gamma != 0
+    def cal_loss_and_grid(self,y_pred,y_batch):
+        '''
+        使用FocalLoss前一定要经过**softmax**激活函数
+        '''
+        log_pred = np.log(y_pred)
+        pow_pred = np.power((1-y_pred)*y_batch,self.gamma)
+        #forward
+        batch_loss = -self.alpha * pow_pred *log_pred 
+        loss = np.mean(np.sum(batch_loss,axis = 1))
+        #backward
+        grid_on_y_pred = -self.gamma * np.power((1-y_pred),self.gamma-1)*log_pred - pow_pred / y_pred
+
+        reg_loss = 0
+        for parameter in self.parameter_list:
+            reg_loss+=parameter.reg_loss
+
+        return loss,reg_loss,grid_on_y_pred

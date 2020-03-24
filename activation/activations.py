@@ -1,6 +1,6 @@
 from .activations_class import *
 
-activations_list = [None, "softmax", "relu", "sigmoid", "tanh", "ELU", "swish"]
+activations_list = [None, "softmax", "relu", "sigmoid", "tanh", "ELU", "swish", "LeakyReLU"]
 
 
 def get_activation(name, forward=None, backward=None):
@@ -18,6 +18,8 @@ def get_activation(name, forward=None, backward=None):
             return ELU()
         elif name == "swish":
             return Swish()
+        elif name == "LeakyReLU":
+            return LeakyReLU()
         else:
             return Activation()
     elif forward and backward:

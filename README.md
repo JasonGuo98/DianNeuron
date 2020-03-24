@@ -16,8 +16,9 @@
 * softmax
 * tanh
 * sigmoid
-* smash
+* swish
 * ELU
+* LeakyReLU
 
 ## 支持的损失函数
 * CrossEntropy
