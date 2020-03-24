@@ -96,7 +96,7 @@ class Dense(Layer):
         else:
             self.name = self.name+str(out_dim)+" : %d"%Dense.count
         pass
-
+        self.use_bn = False
         if use_bn:
             self.use_bn = True
             self.bn_layer = BatchNorm1d(last_layer=self, init=bn_init, momentum=bn_momentum, eps = bn_eps,need_auto_cal = False)
@@ -262,7 +262,7 @@ class BatchNorm1d(Layer):
 
         
 
-        print(init)
+        # print(init)
         if name:
             self.name = name+str(self.num_features)+" : %d"%BatchNorm1d.count
         else:
@@ -270,7 +270,7 @@ class BatchNorm1d(Layer):
         self._initialize()
 
     def _initialize(self):
-        print(self.init_mode)
+        # print(self.init_mode)
         self.gamma = Parameter(shape=(self.num_features,), name=self.name+":gamma" , init=self.init_mode)
         self.beta = Parameter(shape=(self.num_features,), name=self.name+":beta", init=self.init_mode)
         self.running_mean = np.zeros((self.num_features,),dtype='float32')

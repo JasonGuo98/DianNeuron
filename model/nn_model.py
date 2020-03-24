@@ -89,7 +89,7 @@ def get_forward_func(input_layer,output_layer):
         return priority
 
     priority = get_priority(input_layer,output_layer)
-    print(priority)
+    # print(priority)
     def forward_func(x,is_train = True):
         # 现在可以处理有向无环图图
         priority[0].forward(x,is_train)
@@ -130,7 +130,7 @@ def get_backword_func(input_layer,output_layer):
                         zero_out_degree_nodes.append(last_layer)
         return priority
     priority = get_priority(input_layer,output_layer)
-    print(priority)
+    # print(priority)
     def backward_func(grid_on_y):
         # 现在可以处理有向无环图图
         priority[0].backward(grid_on_y, )
