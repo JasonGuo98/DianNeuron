@@ -7,6 +7,7 @@ class Layer(object):
     TYPE = "layer"
     name = "layer"
     def __init__(self,):
+        self.need_auto_cal = True
         pass
     def forward(self,x,is_train = True):
         pass
@@ -73,7 +74,8 @@ class Inputs(Layer):
 class Dense(Layer):
     count = 0
     name = "Dense"
-    def __init__(self,last_layer,out_dim,activation,W_regularization,W_regularizationRate,W_init,b_init,dtype,name):
+    def __init__(self,last_layer,out_dim,activation,W_regularization,W_regularizationRate,W_init,b_init,dtype,name,use_bn\
+        ,bn_init='Xavier', bn_momentum=0.9, bn_eps=1e-5):
         super(Dense, self).__init__()
         last_layer.next_layer_list.append(self)
         last_layer.out_degree += 1
@@ -95,6 +97,10 @@ class Dense(Layer):
             self.name = self.name+str(out_dim)+" : %d"%Dense.count
         pass
 
+        if use_bn:
+            self.use_bn = True
+            self.bn_layer = BatchNorm1d(last_layer=self, init=bn_init, momentum=bn_momentum, eps = bn_eps,need_auto_cal = False)
+
         self.W = Parameter((self.in_dim, self.out_dim), name=self.name + ":W", \
                            regularization=W_regularization, regularizationRate=W_regularizationRate, init=W_init,
                            dtype=dtype)
@@ -109,24 +115,20 @@ class Dense(Layer):
             raise ValueError("inputs dim: ", x.shape[1:], " and the build in_dim: ", self.in_dim, "does not match!")
         wxb = x @ self.W.value + self.b.value
 
-        y = self.activation.forward(wxb)
-
+        if self.use_bn:
+            bn_wxb = self.bn_layer.forward(wxb)
+            self.info_dic['wxb'] = bn_wxb
+            self.info_dic['_wxb'] = wxb
+            y = self.activation.forward(bn_wxb)
+        else:
+            y = self.activation.forward(wxb)
+            self.info_dic['wxb'] = wxb
         # 保留必要的中间值方便计算梯度
-        try:
-            del self.info_dic['y']
-        except:
-            pass
+        self.info_dic['x'] = x    
         self.info_dic['y'] = y
-        try:
-            del self.info_dic['wxb']
-        except:
-            pass
-        self.info_dic['wxb'] = wxb
-        try:
-            del self.info_dic['x']
-        except:
-            pass
-        self.info_dic['x'] = x
+        
+        
+        
 
         # for parameter in self.parameters.value():
         #     parameter.cal_regularization()
@@ -139,7 +141,12 @@ class Dense(Layer):
 
     def backward(self, grid_on_y):
         # 只用处理单输出
-        grid_on_xwb = self.activation.backward(grid_on_y, self.info_dic)
+        if self.use_bn:
+            grid_on_xwb_bn = self.activation.backward(grid_on_y, self.info_dic)
+            grid_on_xwb = self.bn_layer.backward(grid_on_xwb_bn)
+        else:
+            grid_on_xwb = self.activation.backward(grid_on_y, self.info_dic)
+
 
         x = self.info_dic['x']
         grid_on_x = grid_on_xwb @ self.W.value.T
@@ -222,16 +229,25 @@ class Dropout(Layer):
 class BatchNorm1d(Layer):
     count = 0
     name = "BatchNorm1d"
-    def __init__(self, last_layer,name = None, init='Xavier', momentum=0.9, eps=1e-5):
+    def __init__(self, last_layer,name = None, init='Xavier', momentum=0.9, eps=1e-5,need_auto_cal = True):
         super(BatchNorm1d,self).__init__()
-        last_layer.next_layer_list.append(self)
-        last_layer.out_degree+=1
-        self.last_layer = last_layer
-        self.next_layer_list = []
-        self.num_features = last_layer.out_dim
-        self.out_dim = self.in_dim = last_layer.out_dim
-        self.in_degree = 1
-        self.out_degree = 0
+        self.need_auto_cal = need_auto_cal
+        if need_auto_cal:
+            last_layer.next_layer_list.append(self)
+            last_layer.out_degree+=1
+            self.last_layer = last_layer
+            self.next_layer_list = []
+            self.num_features = last_layer.out_dim
+            self.out_dim = self.in_dim = last_layer.out_dim
+            self.in_degree = 1
+            self.out_degree = 0
+        else:
+            self.last_layer = last_layer
+            self.next_layer_list = []
+            self.num_features = last_layer.out_dim
+            self.out_dim = self.in_dim = last_layer.out_dim
+            self.in_degree = 1
+            self.out_degree = 0
 
         self.gamma = None
         self.beta = None
@@ -243,6 +259,10 @@ class BatchNorm1d(Layer):
         self.momentum = momentum
         self.eps = eps
         self.init_mode = init
+
+        
+
+        print(init)
         if name:
             self.name = name+str(self.num_features)+" : %d"%BatchNorm1d.count
         else:
@@ -250,6 +270,7 @@ class BatchNorm1d(Layer):
         self._initialize()
 
     def _initialize(self):
+        print(self.init_mode)
         self.gamma = Parameter(shape=(self.num_features,), name=self.name+":gamma" , init=self.init_mode)
         self.beta = Parameter(shape=(self.num_features,), name=self.name+":beta", init=self.init_mode)
         self.running_mean = np.zeros((self.num_features,),dtype='float32')

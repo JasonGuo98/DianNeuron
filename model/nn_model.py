@@ -79,13 +79,17 @@ def get_forward_func(input_layer,output_layer):
         zero_in_degree_nodes = [input_layer]
         priority = []
         for layer in zero_in_degree_nodes:
+            if layer.need_auto_cal == False:
+                continue
             priority.append(layer)
             for next_layer in layer.next_layer_list:
                 next_layer.in_degree-=1
                 if next_layer.in_degree == 0 and next_layer not in zero_in_degree_nodes:
                     zero_in_degree_nodes.append(next_layer)
         return priority
+
     priority = get_priority(input_layer,output_layer)
+    print(priority)
     def forward_func(x,is_train = True):
         # 现在可以处理有向无环图图
         priority[0].forward(x,is_train)
@@ -126,6 +130,7 @@ def get_backword_func(input_layer,output_layer):
                         zero_out_degree_nodes.append(last_layer)
         return priority
     priority = get_priority(input_layer,output_layer)
+    print(priority)
     def backward_func(grid_on_y):
         # 现在可以处理有向无环图图
         priority[0].backward(grid_on_y, )
