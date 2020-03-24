@@ -6,15 +6,17 @@ from ..activation.activations import activations_list, get_activation
 class Layer(object):
     TYPE = "layer"
     name = "layer"
-    def __init__(self,):
+
+    def __init__(self, ):
         pass
-    def forward(self,x,is_train = True):
+
+    def forward(self, x, is_train=True):
         pass
 
     def backward(self, grid_on_y):
         pass
 
-    def auto_forward(self,is_train = True):
+    def auto_forward(self, is_train=True):
         pass
 
     def auto_backward(self, ):
@@ -24,7 +26,8 @@ class Layer(object):
 class Inputs(Layer):
     count = 0
     name = "Inputs"
-    def __init__(self,out_dim,name):
+
+    def __init__(self, out_dim, name):
 
         super(Inputs, self).__init__()
         self.out_dim = self.in_dim = out_dim
@@ -38,20 +41,21 @@ class Inputs(Layer):
         if name:
             self.name = name + str(out_dim) + " : %d" % Inputs.count
         else:
-            self.name = self.name+str(out_dim)+" : %d"%Inputs.count
+            self.name = self.name + str(out_dim) + " : %d" % Inputs.count
 
         self.grid_on_x = np.zeros(out_dim)
         self.info_dic = {}
 
         Inputs.count += 1
 
-    def forward(self,x,is_train = True):
+    def forward(self, x, is_train=True):
         if x.shape[1:] != (self.in_dim,):
             raise ValueError("inputs dim: ", x.shape[1:], " and the build in_dim: ", self.out_dim, "does not match!")
         self.info_dic['y'] = x
 
         return x
-    def auto_forward(self,is_train = True):
+
+    def auto_forward(self, is_train=True):
         # 臣妾做不到
         return
 
@@ -73,7 +77,9 @@ class Inputs(Layer):
 class Dense(Layer):
     count = 0
     name = "Dense"
-    def __init__(self,last_layer,out_dim,activation,W_regularization,W_regularizationRate,W_init,b_init,dtype,name):
+
+    def __init__(self, last_layer, out_dim, activation, W_regularization, W_regularizationRate, W_init, b_init, dtype,
+                 name):
         super(Dense, self).__init__()
         last_layer.next_layer_list.append(self)
         last_layer.out_degree += 1
@@ -92,7 +98,7 @@ class Dense(Layer):
         if name:
             self.name = name + str(out_dim) + " : %d" % Dense.count
         else:
-            self.name = self.name+str(out_dim)+" : %d"%Dense.count
+            self.name = self.name + str(out_dim) + " : %d" % Dense.count
         pass
 
         self.W = Parameter((self.in_dim, self.out_dim), name=self.name + ":W", \
@@ -104,7 +110,7 @@ class Dense(Layer):
         self.info_dic = {}
         Dense.count += 1
 
-    def forward(self,x,is_train = True):
+    def forward(self, x, is_train=True):
         if x.shape[1:] != (self.in_dim,):
             raise ValueError("inputs dim: ", x.shape[1:], " and the build in_dim: ", self.in_dim, "does not match!")
         wxb = x @ self.W.value + self.b.value
@@ -134,7 +140,7 @@ class Dense(Layer):
         self.b.cal_regularization()
         return y
 
-    def auto_forward(self,is_train = True):
+    def auto_forward(self, is_train=True):
         self.forward(self.last_layer.info_dic['y'])
 
     def backward(self, grid_on_y):
@@ -162,10 +168,11 @@ class Dense(Layer):
 class Dropout(Layer):
     count = 0
     name = "Dropout"
-    def __init__(self,last_layer,keep_prob,scale_train,name):
+
+    def __init__(self, last_layer, keep_prob, scale_train, name):
         super(Dropout, self).__init__()
         last_layer.next_layer_list.append(self)
-        last_layer.out_degree+=1
+        last_layer.out_degree += 1
         self.next_layer_list = []
         self.in_degree = 1
         self.out_degree = 0
@@ -178,45 +185,44 @@ class Dropout(Layer):
         self.scale_train = scale_train
 
         if name:
-            self.name = name+str(self.out_dim)+" : %d"%Dropout.count
+            self.name = name + str(self.out_dim) + " : %d" % Dropout.count
         else:
-            self.name = self.name+str(self.out_dim)+" : %d"%Dropout.count
+            self.name = self.name + str(self.out_dim) + " : %d" % Dropout.count
         self.parameters = {}
         self.info_dic = {}
-        Dropout.count+=1
+        Dropout.count += 1
 
-    def forward(self,x,is_train = True):
+    def forward(self, x, is_train=True):
         if x.shape[1:] != (self.in_dim,):
-            raise ValueError("inputs dim: ",x.shape[1:]," and the build in_dim: ",self.in_dim,"does not match!")
+            raise ValueError("inputs dim: ", x.shape[1:], " and the build in_dim: ", self.in_dim, "does not match!")
         if not is_train:
             if self.scale_train:
-                y = x*self.keep_prob
+                y = x * self.keep_prob
             else:
                 y = x
         else:
             drops = np.random.random(x.shape)
-            drops[drops<(1-self.keep_prob)] = 0
-            drops[drops>=(1-self.keep_prob)] = 1
-            y = x*drops
+            drops[drops < (1 - self.keep_prob)] = 0
+            drops[drops >= (1 - self.keep_prob)] = 1
+            y = x * drops
             self.info_dic['drops'] = drops
         self.info_dic['y'] = y
         return y
 
-    def auto_forward(self,is_train = True):
-        self.forward(self.last_layer.info_dic['y'],is_train)
+    def auto_forward(self, is_train=True):
+        self.forward(self.last_layer.info_dic['y'], is_train)
 
-        
-    def backward(self,grid_on_y):
+    def backward(self, grid_on_y):
         drops = self.info_dic['drops']
-        grid_on_x = grid_on_y*drops
+        grid_on_x = grid_on_y * drops
 
-        self.info_dic['grid_on_%s'%self.last_layer.name] = grid_on_x
+        self.info_dic['grid_on_%s' % self.last_layer.name] = grid_on_x
         return grid_on_x
 
-    def auto_backward(self,):
-        grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s'%self.name]
+    def auto_backward(self, ):
+        grid_on_y = self.next_layer_list[0].info_dic['grid_on_%s' % self.name]
         for layer in self.next_layer_list[1:]:
-            grid_on_y+=layer.info_dic['grid_on_%s'%self.name]
+            grid_on_y += layer.info_dic['grid_on_%s' % self.name]
         grid_on_x = self.backward(grid_on_y)
 
 class BatchNorm1d(Layer):
