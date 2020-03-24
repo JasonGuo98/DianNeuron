@@ -125,3 +125,18 @@ class Swish(Activation):
         x = info_dic['wxb']
         return grid_on_y*(np.exp(self.beta * x) / (1 + np.exp(self.beta * x)) + x * (
                 self.beta * np.exp(self.beta * x) / ((1 + np.exp(self.beta * x)) * (1 + np.exp(self.beta * x)))))
+
+class LeakyReLU(Activation):
+    def __init__(self,name='LeakyReLU', alpha=0.2):
+        self.name = name
+        self.alpha = alpha
+        self._cache = None
+
+    def forward(self, x):
+        mask = x > 0
+        self._cache = mask
+        return x*mask + (1-mask)*x*self.negatialphave_slope
+
+    def backward(self, grad_in, info_dic=None):
+        mask = self._cache
+        return grad_in * mask + (1-mask)*grad_in*self.alpha
