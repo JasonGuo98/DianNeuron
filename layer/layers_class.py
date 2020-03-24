@@ -104,12 +104,14 @@ class Dense(Layer):
         if use_bn:
             self.use_bn = True
             self.bn_layer = BatchNorm1d(last_layer=self, init=bn_init, momentum=bn_momentum, eps = bn_eps,need_auto_cal = False)
-
+            
         self.W = Parameter((self.in_dim, self.out_dim), name=self.name + ":W", \
                            regularization=W_regularization, regularizationRate=W_regularizationRate, init=W_init,
                            dtype=dtype)
         self.b = Parameter((self.out_dim,), name=self.name + "：b", init=b_init, dtype=dtype)
         self.parameters = {"W": self.W, 'b': self.b}
+        if self.use_bn:
+            self.parameters = dict( self.parameters, **self.bn_layer.parameters)
 
         self.info_dic = {}
         Dense.count += 1

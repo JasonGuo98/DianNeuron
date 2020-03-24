@@ -11,19 +11,21 @@ def get_graph_noed_and_edge(input_layer,output_layer):
     edge_labels = {}
     all_layer = [input_layer]
     for layer in all_layer:
-        if hasattr(layer,"activation"):
-            layer_name = layer.name + "=>"+layer.activation.name
+        if hasattr(layer,"bn_layer"):
+            layer_name = layer.name + "=>"+"BatchNormal"
         else:
             layer_name = layer.name
-        if hasattr(layer,"bn_layer"):
-                layer_name = layer_name + "=>"+"BatchNormal"
+        if hasattr(layer,"activation"):
+            layer_name = layer_name + "=>"+layer.activation.name
+        
+        
         for next_layer in layer.next_layer_list:
-            if hasattr(next_layer,"activation"):
-                next_layer_name = next_layer.name + "=>"+next_layer.activation.name
+            if hasattr(next_layer,"bn_layer"):
+                next_layer_name = next_layer.name + "=>"+"BatchNormal"
             else:
                 next_layer_name = next_layer.name
-            if hasattr(next_layer,"bn_layer"):
-                next_layer_name = next_layer_name + "=>"+"BatchNormal"
+            if hasattr(next_layer,"activation"):
+                next_layer_name = next_layer_name + "=>"+next_layer.activation.name
             all_layer.append(next_layer)
             edges.append([layer_name,next_layer_name])
             edge_labels[(layer_name,next_layer_name)] = "BatchSize"+"×"+str(layer.out_dim)
